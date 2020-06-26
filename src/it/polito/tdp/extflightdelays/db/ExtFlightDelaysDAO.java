@@ -10,9 +10,37 @@ import java.util.List;
 
 import it.polito.tdp.extflightdelays.model.Airline;
 import it.polito.tdp.extflightdelays.model.Airport;
+import it.polito.tdp.extflightdelays.model.Arco;
 import it.polito.tdp.extflightdelays.model.Flight;
 
 public class ExtFlightDelaysDAO {
+	
+	public List<Arco> getArchi(){
+		String sql="SELECT a1.STATE AS s1, a2.STATE AS s2, COUNT(DISTINCT TAIL_NUMBER) AS peso "+
+				"FROM flights f, airports a1, airports a2 "+
+				"WHERE f.ORIGIN_AIRPORT_ID=a1.ID && f.DESTINATION_AIRPORT_ID=a2.ID && a1.COUNTRY='USA' && a2.country='USA' "+
+				"GROUP BY a1.STATE, a2.STATE";
+		List<Arco> result = new ArrayList<>();
+
+		try {
+			Connection conn = ConnectDB.getConnection();
+			PreparedStatement st = conn.prepareStatement(sql);
+			ResultSet rs = st.executeQuery();
+
+			while (rs.next()) {
+				result.add(new Arco(rs.getString("s1"),rs.getString("s2"),rs.getInt("peso")));
+			}
+
+			conn.close();
+			return result;
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			System.out.println("Errore connessione al database");
+			throw new RuntimeException("Error Connection Database");
+		}
+		
+	}
 
 	public List<String> loadAllStates(){
 		String sql = "SELECT distinct(STATE) from airports";
